@@ -4,9 +4,9 @@ const helpers = require('autobase-test-helpers')
 const same = require('same-data')
 const b4a = require('b4a')
 
-const Spacebase = require('../..')
+const SpaceAutobase = require('../..')
 const argv = typeof global.Bare !== 'undefined' ? global.Bare.argv : process.argv
-const encryptionKey = argv.includes('--encrypt-all') ? b4a.alloc(32).fill('spacebase-encryption-test') : undefined
+const encryptionKey = argv.includes('--encrypt-all') ? b4a.alloc(32).fill('spaceautobase-encryption-test') : undefined
 
 module.exports = {
   createStores,
@@ -75,7 +75,7 @@ function createBase (store, key, t, opts = {}) {
     ...opts
   }
 
-  const base = new Spacebase(store.session(), key, moreOpts)
+  const base = new SpaceAutobase(store.session(), key, moreOpts)
 
   if (opts.maxSupportedVersion !== undefined) {
     base.maxSupportedVersion = opts.maxSupportedVersion

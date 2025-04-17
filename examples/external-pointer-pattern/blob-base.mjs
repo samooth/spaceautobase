@@ -1,4 +1,4 @@
-import Spacebase from '../../index.js'
+import SpaceAutobase from '../../index.js'
 import Corestore from 'corestore'
 import Spaceblobs from 'spaceblobs'
 import Spacebee from 'spacebee'
@@ -18,7 +18,7 @@ class BlobBase extends ReadyResource {
   }
 
   async _open () {
-    this.base = new Spacebase(this.store, this.bootstrap, {
+    this.base = new SpaceAutobase(this.store, this.bootstrap, {
       valueEncoding: c.any,
       open: this.open.bind(this),
       apply: this.apply.bind(this)
@@ -104,7 +104,7 @@ await b.ready()
 
 const bases = [a.base, b.base]
 
-// Replicate between spacebases
+// Replicate between spaceautobases
 const done = replicate(bases)
 await sync(bases)
 

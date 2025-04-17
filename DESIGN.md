@@ -1,4 +1,4 @@
-# Spacebase Design
+# SpaceAutobase Design
 
 This document outlines the design of an algorithm that achieves eventual consistent ordering of a distributed set of message from multiple writers.
 

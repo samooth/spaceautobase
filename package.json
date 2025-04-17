@@ -1,5 +1,5 @@
 {
-  "name": "spacebase",
+  "name": "spaceautobase",
   "version": "0.0.1",
   "description": "A multiwriter data structure for Spacecore",
   "main": "index.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/samooth/spacebase.git"
+    "url": "git+https://github.com/samooth/spaceautobase.git"
   },
   "author": "Holepunch",
   "contributors": [
@@ -35,9 +35,9 @@
   ],  
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/samooth/spacebase/issues"
+    "url": "https://github.com/samooth/spaceautobase/issues"
   },
-  "homepage": "https://github.com/samooth/spacebase#readme",
+  "homepage": "https://github.com/samooth/spaceautobase#readme",
   "dependencies": {
     "b4a": "^1.6.1",
     "bare-events": "^2.2.0",

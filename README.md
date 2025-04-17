@@ -1,19 +1,19 @@
-# Spacebase
+# SpaceAutobase
 
 A multiwriter data structure for combining multiple writer cores into a view of the system. Using the event sourcing pattern, writers append blocks which are linearized into an eventually consistent order for building a view of the system, combining their inputs.
 
 ## Install
 
-`npm i spacebase`
+`npm i spaceautobase`
 
 ## Usage
 
 ```js
 const Corestore = require('spacecorestore')
-const Spacebase = require('spacebase')
+const SpaceAutobase = require('spaceautobase')
 
 const store = new Corestore('./some-dir')
-const local = new Spacebase(store, remote.key, { apply, open })
+const local = new SpaceAutobase(store, remote.key, { apply, open })
 await local.ready()
 
 // on remote base
@@ -58,7 +58,7 @@ async function apply (nodes, view, host) {
 
 ### Ordering
 
-Spacebase writer nodes explicitly reference previous nodes creating a causal directed acyclic graph (DAG). The nodes are linearized by analyzing the causal references so:
+SpaceAutobase writer nodes explicitly reference previous nodes creating a causal directed acyclic graph (DAG). The nodes are linearized by analyzing the causal references so:
 
 1. Nodes never precede nodes they reference.
 2. Ordering is eventually consistent.
@@ -75,7 +75,7 @@ The linearizing algorithm is able to define checkpoints after which the ordering
 
 A view is one or more spacecores whose contents are created by deterministically applying the linearized nodes from writers. The view represents the combined history of all writers' inputs or the current state of the system as a whole.
 
-Spacebase accepts an `open` function for creating views and an `apply` function that can be used to update the views based on the writer nodes.
+SpaceAutobase accepts an `open` function for creating views and an `apply` function that can be used to update the views based on the writer nodes.
 
 ```js
 function open (store) {
@@ -89,17 +89,17 @@ async function apply (nodes, view, host) {
 }
 ```
 
-*IMPORTANT*: Spacebase messages may be reordered as new data becomes available. Updates will be undone and reapplied internally. So it is important that the `open` handler returns a data structure only derived from its `store` object argument and that while updating the view in the `apply` function, the `view` argument is the only data structure being update and that its fully deterministic. If any external data structures are used, these updates will not be correctly undone.
+*IMPORTANT*: SpaceAutobase messages may be reordered as new data becomes available. Updates will be undone and reapplied internally. So it is important that the `open` handler returns a data structure only derived from its `store` object argument and that while updating the view in the `apply` function, the `view` argument is the only data structure being update and that its fully deterministic. If any external data structures are used, these updates will not be correctly undone.
 
 ## API
 
-### Spacebase
+### SpaceAutobase
 
-#### `const base = new Spacebase(store, bootstrap, opts)`
+#### `const base = new SpaceAutobase(store, bootstrap, opts)`
 
-Instantiate an Spacebase.
+Instantiate an SpaceAutobase.
 
-If loading an existing Spacebase then set `bootstrap` to `base.key`, otherwise pass `bootstrap` as null or omit.
+If loading an existing SpaceAutobase then set `bootstrap` to `base.key`, otherwise pass `bootstrap` as null or omit.
 
 `opts` takes the following options:
 
@@ -107,26 +107,26 @@ If loading an existing Spacebase then set `bootstrap` to `base.key`, otherwise p
 {
   open: (store, host) => { ... }, // create the view
   apply: async (nodes, view, host) => { ... }, // handle nodes to update view
-  optimistic: false, // Spacebase supports optimistic appends
+  optimistic: false, // SpaceAutobase supports optimistic appends
   close: async view => { ... }, // close the view
   valueEncoding, // encoding
   ackInterval: 1000 // enable auto acking with the interval
   encryptionKey: buffer, // Key to encrypt the base
   encrypt: false, // Encrypt the base if unencrypted & no encryptionKey is set
   encrypted: false, // Expect the base to be encrypted, will throw an error otherwise, defaults to true if encryptionKey is set
-  fastForward: true, // Enable fast forwarding. If passing { key: base.core.key }, they spacebase will fastforward to that key first.
+  fastForward: true, // Enable fast forwarding. If passing { key: base.core.key }, they spaceautobase will fastforward to that key first.
   wakeup: new ProtomuxWakeup(), // Set a custom wakeup protocol for hinting which writers are active, see `protomux-wakeup` for protocol details
 }
 ```
 
 An `ackInterval` may be set to enable automatic acknowledgements. When enabled, in cases where it would help the linearizer converge, the base shall eagerly append `null` values to merge causal forks.
 
-Setting an spacebase to be `optimistic` means that writers can append an `optimistic` block even when they are not a writer. For a block to be optimistically applied to the view, the writer must be acknowledge via `host.ackWriter(key)`.
+Setting an spaceautobase to be `optimistic` means that writers can append an `optimistic` block even when they are not a writer. For a block to be optimistically applied to the view, the writer must be acknowledge via `host.ackWriter(key)`.
 
 _Note:_ Optimistic blocks should self verify in the `apply` handler to prevent unintended writers from appending blocks to exploit the system. If the `apply` handler does not have a way to verify optimistic blocks, any writer could append blocks even when not added to the system.
 
 ```js
-const base = new Spacebase(store, bootstrap, {
+const base = new SpaceAutobase(store, bootstrap, {
   optimistic: true,
   async apply (nodes, view, host) {
     for (const node of nodes) {
@@ -150,11 +150,11 @@ await base.append({ num: 4, password: 'incorrect' }, { optimistic: true }) // wi
 
 #### `base.key`
 
-The primary key of the spacebase.
+The primary key of the spaceautobase.
 
 #### `base.discoveryKey`
 
-The discovery key associated with the spacebase.
+The discovery key associated with the spaceautobase.
 
 #### `base.isIndexer`
 
@@ -162,15 +162,15 @@ Whether the instance is an indexer.
 
 #### `base.writable`
 
-Whether the instance is a writer for the spacebase.
+Whether the instance is a writer for the spaceautobase.
 
 #### `base.view`
 
-The view of the spacebase derived from writer inputs. The view is created in the `open` handler and can have any shape. The most common `view` is a [spacebee](https://github.com/samooth/spacebee).
+The view of the spaceautobase derived from writer inputs. The view is created in the `open` handler and can have any shape. The most common `view` is a [spacebee](https://github.com/samooth/spacebee).
 
 #### `base.length`
 
-The length of the system core. This is neither the length of the local writer nor the length of the view. The system core tracks the spacebase as a whole.
+The length of the system core. This is neither the length of the local writer nor the length of the view. The system core tracks the spaceautobase as a whole.
 
 #### `base.signedLength`
 
@@ -178,17 +178,17 @@ The index of the system core that has been signed by a quorum of indexers. The s
 
 #### `base.paused`
 
-Returns `true` if the spacebase is currently paused, otherwise returns `false`.
+Returns `true` if the spaceautobase is currently paused, otherwise returns `false`.
 
 #### `await base.append(value, opts)`
 
-Append a new entry to the spacebase.
+Append a new entry to the spaceautobase.
 
 Options include:
 
 ```
 {
-  optimistic: false // Allow appending on an optimistic spacebase while not a writer
+  optimistic: false // Allow appending on an optimistic spaceautobase while not a writer
 }
 ```
 
@@ -208,7 +208,7 @@ Returns the hash of the system core's merkle tree roots.
 
 #### `const stream = base.replicate(isInitiator || stream, opts)`
 
-Creates a replication stream for replicating the spacebase. Arguments are the same as [corestores's `.replicate()`](https://github.com/samooth/spacecorestore?tab=readme-ov-file#const-stream--storereplicateoptsorstream).
+Creates a replication stream for replicating the spaceautobase. Arguments are the same as [corestores's `.replicate()`](https://github.com/samooth/spacecorestore?tab=readme-ov-file#const-stream--storereplicateoptsorstream).
 
 ```js
 const swarm = new Spaceswarm()
@@ -225,29 +225,29 @@ Gets the current writer heads. A writer head is a node which has no causal depen
 
 #### `await base.pause()`
 
-Pauses the spacebase prevent the next apply from running.
+Pauses the spaceautobase prevent the next apply from running.
 
 #### `await base.resume()`
 
-Resumes a paused spacebase and will check for an update.
+Resumes a paused spaceautobase and will check for an update.
 
-#### `const core = Spacebase.getLocalCore(store, handlers, encryptionKey)`
+#### `const core = SpaceAutobase.getLocalCore(store, handlers, encryptionKey)`
 
-Generate a local core to be used for an Spacebase.
+Generate a local core to be used for an SpaceAutobase.
 
 `handlers` are any options passed to `store` to get the core.
 
-#### `const { referrer, view } = Spacebase.getUserData(core)`
+#### `const { referrer, view } = SpaceAutobase.getUserData(core)`
 
-Get user data associated with an spacebase `core`. `referrer` is the `.key` of the spacebase the `core` is from. `view` is the `name` of the view.
+Get user data associated with an spaceautobase `core`. `referrer` is the `.key` of the spaceautobase the `core` is from. `view` is the `name` of the view.
 
-#### `const isBase = Spacebase.isSpacebase(core, opts)`
+#### `const isBase = SpaceAutobase.isSpaceAutobase(core, opts)`
 
-Returns whether the core is an spacebase core. `opts` are the same options as [core.get(index, opts)](https://github.com/samooth/spacecore?tab=readme-ov-file#const-block--await-coregetindex-options).
+Returns whether the core is an spaceautobase core. `opts` are the same options as [core.get(index, opts)](https://github.com/samooth/spacecore?tab=readme-ov-file#const-block--await-coregetindex-options).
 
 #### `base.on('update', () => { ... })`
 
-Triggered when the spacebase view updates after `apply` has finished running.
+Triggered when the spaceautobase view updates after `apply` has finished running.
 
 #### `base.on('interrupt', (reason) => { ... })`
 
@@ -255,25 +255,25 @@ Triggered when `host.interrupt(reason)` is called in the `apply` handler. See [`
 
 #### `base.on('fast-forward', (to, from) => { ... })`
 
-Triggered when the spacebase fast forwards to a state already with a quorum. `to` and `from` are the `.signedLength` after and before the fast forward respectively.
+Triggered when the spaceautobase fast forwards to a state already with a quorum. `to` and `from` are the `.signedLength` after and before the fast forward respectively.
 
-Fast forwarding speeds up an spacebase catching up to peers.
+Fast forwarding speeds up an spaceautobase catching up to peers.
 
 #### `base.on('is-indexer', () => { ... })`
 
-Triggered when the spacebase instance is an indexer.
+Triggered when the spaceautobase instance is an indexer.
 
 #### `base.on('is-non-indexer', () => { ... })`
 
-Triggered when the spacebase instance is not an indexer.
+Triggered when the spaceautobase instance is not an indexer.
 
 #### `base.on('writable', () => { ... })`
 
-Triggered when the spacebase instance is now a writer.
+Triggered when the spaceautobase instance is now a writer.
 
 #### `base.on('unwritable', () => { ... })`
 
-Triggered when the spacebase instance is no longer a writer.
+Triggered when the spaceautobase instance is no longer a writer.
 
 #### `base.on('warning', (warning) => { ... })`
 
@@ -281,27 +281,27 @@ Triggered when a warning is triggered.
 
 #### `base.on('error', (err) => { ... })`
 
-Triggered when an error is triggered while updating the spacebase.
+Triggered when an error is triggered while updating the spaceautobase.
 
 ### `AutoStore`
 
-Each spacebase creates a `AutoStore` which is used to create views. The store is passed to the `open` function.
+Each spaceautobase creates a `AutoStore` which is used to create views. The store is passed to the `open` function.
 
 #### `const core = store.get(name || { name, valueEncoding })`
 
 Load a `Spacecore` by name (passed as `name`). `name` should be passed as a string.
 
-### `SpacebaseHostCalls`
+### `SpaceAutobaseHostCalls`
 
 An instance of this is passed to `apply` and can be used to invoke the following side effects on the base itself.
 
 #### `await host.addWriter(key, { indexer = true })`
 
-Add a writer with the given `key` to the spacebase allowing their local core to append. If `indexer` is `true`, it will be added as an indexer.
+Add a writer with the given `key` to the spaceautobase allowing their local core to append. If `indexer` is `true`, it will be added as an indexer.
 
 #### `await host.removeWriter(key)`
 
-Remove a writer from the spacebase. This will throw if the writer cannot be removed.
+Remove a writer from the spaceautobase. This will throw if the writer cannot be removed.
 
 #### `await host.ackWriter(key)`
 
@@ -309,7 +309,7 @@ Acknowledge a writer even if they haven't been added before. This is most useful
 
 #### `host.interrupt(reason)`
 
-Interrupt the applying of writer blocks optionally giving a `reason`. This will emit an `interrupt` event passing the `reason` to the callback and close the spacebase.
+Interrupt the applying of writer blocks optionally giving a `reason`. This will emit an `interrupt` event passing the `reason` to the callback and close the spaceautobase.
 
 Interrupts are an escape hatch to stop the apply function and resolve the issue by updating your apply function to handle it. A common scenario is adding a new block type that an older peer gets from a newer peer.
 

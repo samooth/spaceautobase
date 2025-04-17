@@ -4,11 +4,11 @@ The external pointer pattern has a writer append a pointer to large amounts of d
 
 ## Motivation
 
-When using an spacebase that need to synchronize large amounts of data, if the data is appended by writers and used to create the view, the spacebase can quickly grow in size due to the writer data being copied into the view. This can slow down indexers by requiring them to processing large amounts of data.
+When using an spaceautobase that need to synchronize large amounts of data, if the data is appended by writers and used to create the view, the spaceautobase can quickly grow in size due to the writer data being copied into the view. This can slow down indexers by requiring them to processing large amounts of data.
 
 ## Solution
 
-To avoid this, writers can append a block which includes a pointer to find the data outside of the spacebase. This way data isn't duplicated between the writer and the view.
+To avoid this, writers can append a block which includes a pointer to find the data outside of the spaceautobase. This way data isn't duplicated between the writer and the view.
 
 ## Example
 
@@ -29,7 +29,7 @@ Adding a file to the `BlobBase` (`blobBase.put(filename, blob)`) first `.put()`s
 
 To retrieve the blobs, a peer can lookup the pointer using the filename to `view.get(filename)` and creating a Spaceblob instance based on the pointer to get the blob from.
 
-This means the peer need to replicate the spaceblobs instance as well so that when peers access the `filename` they can request the blob. A full solution would manage the spaceblobs much like how Spacebase manages writers keeping only the relevant spaceblobs open and closing them as needed.
+This means the peer need to replicate the spaceblobs instance as well so that when peers access the `filename` they can request the blob. A full solution would manage the spaceblobs much like how SpaceAutobase manages writers keeping only the relevant spaceblobs open and closing them as needed.
 
 With the pointer a 100MB blob is only stored in the spaceblobs's core of the writer.
 
