@@ -5,7 +5,7 @@ const Linearizer = require('../../lib/linearizer')
 const Writer = require('../../lib/writer')
 const { OplogMessage } = require('../../lib/messages')
 
-class MockAutobase {
+class MockSpacebase {
   constructor (writers, linearizer, opts = {}) {
     this.writers = writers
     this.linearizer = linearizer
@@ -25,7 +25,7 @@ class MockAutobase {
   }
 }
 
-// Replays an autobase up to a given set of heads. The returned
+// Replays an spacebase up to a given set of heads. The returned
 // Linearizer will reflect the DAG at the given point.
 
 module.exports = async function replayLinearizer (store, indexers, heads, encryptionKey) {
@@ -77,7 +77,7 @@ async function replayWriterState (store, heads, encryptionKey) {
 async function loadLinearizer (writerState, indexerKeys) {
   const writers = new Map()
 
-  const base = new MockAutobase(writers)
+  const base = new MockSpacebase(writers)
 
   const ws = []
   for (const { core, start, end } of writerState.values()) {

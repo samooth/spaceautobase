@@ -1,6 +1,6 @@
-const Corestore = require('corestore')
+const Corestore = require('spacecorestore')
 const b4a = require('b4a')
-const Hyperswarm = require('hyperswarm')
+const Spaceswarm = require('spaceswarm')
 
 const replayLinearizer = require('./')
 
@@ -12,7 +12,7 @@ const indexers = JSON.parse(process.argv[5])
 replay(discoveryKey, encryptionKey, heads, indexers)
 
 async function replay (discoveryKey, encryptionKey, heads, indexers) {
-  const swarm = new Hyperswarm()
+  const swarm = new Spaceswarm()
 
   const store = new Corestore('./replay-example')
 

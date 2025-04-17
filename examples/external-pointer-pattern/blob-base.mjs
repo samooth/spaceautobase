@@ -1,7 +1,7 @@
-import Autobase from '../../index.js'
+import Spacebase from '../../index.js'
 import Corestore from 'corestore'
-import Hyperblobs from 'hyperblobs'
-import Hyperbee from 'hyperbee'
+import Spaceblobs from 'spaceblobs'
+import Spacebee from 'spacebee'
 import ReadyResource from 'ready-resource'
 import safetyCatch from 'safety-catch'
 import c from 'compact-encoding'
@@ -18,7 +18,7 @@ class BlobBase extends ReadyResource {
   }
 
   async _open () {
-    this.base = new Autobase(this.store, this.bootstrap, {
+    this.base = new Spacebase(this.store, this.bootstrap, {
       valueEncoding: c.any,
       open: this.open.bind(this),
       apply: this.apply.bind(this)
@@ -26,14 +26,14 @@ class BlobBase extends ReadyResource {
     await this.base.ready()
 
     const blobsCore = this.store.get({ name: 'blobs' })
-    this.localBlobs = new Hyperblobs(blobsCore)
+    this.localBlobs = new Spaceblobs(blobsCore)
     // TODO maybe remove
     await this.localBlobs.ready()
   }
 
   open (store) {
     const core = store.get('view')
-    return new Hyperbee(core, {
+    return new Spacebee(core, {
       extension: false,
       valueEncoding: c.any
     })
@@ -83,7 +83,7 @@ class BlobBase extends ReadyResource {
       remoteBlobs = this.blobs.get(remoteBlobString)
     } else {
       const blobCore = this.store.get(remoteBlobsKey)
-      remoteBlobs = new Hyperblobs(blobCore)
+      remoteBlobs = new Spaceblobs(blobCore)
       this.blobs.set(remoteBlobString, remoteBlobs)
     }
 
@@ -104,7 +104,7 @@ await b.ready()
 
 const bases = [a.base, b.base]
 
-// Replicate between autobases
+// Replicate between spacebases
 const done = replicate(bases)
 await sync(bases)
 

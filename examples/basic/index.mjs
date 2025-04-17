@@ -1,4 +1,4 @@
-import Autobase from '../../index.js'
+import Spacebase from '../../index.js'
 import Corestore from 'corestore'
 import { replicateAndSync } from 'autobase-test-helpers'
 
@@ -16,7 +16,7 @@ async function apply (nodes, view, base) {
   }
 }
 
-const a = new Autobase(makeStore('A'), {
+const a = new Spacebase(makeStore('A'), {
   valueEncoding: 'json',
   open,
   apply
@@ -24,7 +24,7 @@ const a = new Autobase(makeStore('A'), {
 
 await a.ready()
 
-const b = new Autobase(makeStore('B'), a.key, {
+const b = new Spacebase(makeStore('B'), a.key, {
   valueEncoding: 'json',
   open,
   apply

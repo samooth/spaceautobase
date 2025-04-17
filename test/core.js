@@ -1,6 +1,6 @@
 const test = require('brittle')
 const tmpDir = require('test-tmp')
-const Hypercore = require('hypercore')
+const Spacecore = require('bitspacecore')
 
 const {
   create,
@@ -9,13 +9,13 @@ const {
   replicateAndSync
 } = require('./helpers')
 
-test('core -  no new session if closed (hypercore compat)', async t => {
+test('core -  no new session if closed (spacecore compat)', async t => {
   const dir = await tmpDir(t)
   const { bases } = await create(1, t)
 
   const [base] = bases
 
-  const normalCore = new Hypercore(dir)
+  const normalCore = new Spacecore(dir)
   const linearizedSessionCore = base.view
   const snapshotSession = linearizedSessionCore.snapshot()
 
@@ -25,7 +25,7 @@ test('core -  no new session if closed (hypercore compat)', async t => {
     snapshotSession.close()
   ])
 
-  // LinearisedCore.session handles snapshots differently than hypercore.session,
+  // LinearisedCore.session handles snapshots differently than spacecore.session,
   // so just testing that explicitly too
 
   t.exception(() => normalCore.session(), /SESSION_CLOSED/)

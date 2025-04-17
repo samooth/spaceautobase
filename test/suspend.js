@@ -959,7 +959,7 @@ test.skip('suspend - recover from bad sys core', async t => {
 
   await b.close()
 
-  const raw = await b.local.getUserData('autobase/boot')
+  const raw = await b.local.getUserData('spacebase/boot')
   const record = c.decode(BootRecord, raw)
 
   const core = stores[1].get(record.indexed.key)
@@ -991,7 +991,7 @@ test('suspend - restart with unindexed nodes', async t => {
   await addWriterAndSync(a, c, false)
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 0; i < 100; i++) await b.append('b' + i)
 
   await replicateAndSync([b, c])
@@ -1025,12 +1025,12 @@ test('suspend - restart with indexed and unindexed nodes', async t => {
   await addWriterAndSync(a, c, false)
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 0; i < 100; i++) await b.append('b' + i)
 
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 100; i < 200; i++) await b.append('b' + i)
 
   await replicateAndSync([b, c])
@@ -1064,7 +1064,7 @@ test('suspend - restart with unindexed local nodes', async t => {
   await addWriterAndSync(a, c, false)
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 0; i < 100; i++) await c.append('c' + i)
 
   await replicateAndSync([b, c])
@@ -1100,7 +1100,7 @@ test('suspend - restart with indexed and unindexed local nodes', async t => {
 
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 100; i < 200; i++) await c.append('c' + i)
 
   await replicateAndSync([b, c])
@@ -1138,7 +1138,7 @@ test('suspend - restart with crosslinked non-indexer nodes', async t => {
 
   await confirm([a, b, c])
 
-  // bigger than autobase max batch size
+  // bigger than spacebase max batch size
   for (let i = 0; i < 40; i++) await b.append('b' + n++)
   await replicateAndSync([b, c])
   for (let i = 0; i < 40; i++) await c.append('c' + n++)

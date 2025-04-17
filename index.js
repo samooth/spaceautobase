@@ -3,14 +3,14 @@ const ReadyResource = require('ready-resource')
 const debounceify = require('debounceify')
 const c = require('compact-encoding')
 const safetyCatch = require('safety-catch')
-const hypercoreId = require('hypercore-id-encoding')
+const spacecoreId = require('spacecore-id-encoding')
 const assert = require('nanoassert')
 const SignalPromise = require('signal-promise')
 const CoreCoupler = require('core-coupler')
 const mutexify = require('mutexify/promise')
 const ProtomuxWakeup = require('protomux-wakeup')
 const rrp = require('resolve-reject-promise')
-const crypto = require('hypercore-crypto')
+const crypto = require('spacecore-crypto')
 
 const Linearizer = require('./lib/linearizer.js')
 const SystemView = require('./lib/system.js')
@@ -66,7 +66,7 @@ class WakeupHandler {
   }
 }
 
-module.exports = class Autobase extends ReadyResource {
+module.exports = class Spacebase extends ReadyResource {
   constructor (store, bootstrap, handlers = {}) {
     if (Array.isArray(bootstrap)) bootstrap = bootstrap[0] // TODO: just a quick compat, lets remove soon
 
@@ -203,7 +203,7 @@ module.exports = class Autobase extends ReadyResource {
       while (indent.length < opts.indentationLvl) indent += ' '
     }
 
-    return indent + 'Autobase { ... }'
+    return indent + 'Spacebase { ... }'
   }
 
   // just compat, use .key
@@ -299,7 +299,7 @@ module.exports = class Autobase extends ReadyResource {
       keyPair: this.keyPair
     })
 
-    const pointer = await result.local.getUserData('autobase/boot')
+    const pointer = await result.local.getUserData('spacebase/boot')
 
     if (pointer) {
       const { recoveries } = c.decode(messages.BootRecord, pointer)
@@ -345,7 +345,7 @@ module.exports = class Autobase extends ReadyResource {
 
   // TODO: not atomic atm, so more of a (very useful) debug helper
   async _nukeTip () {
-    const pointer = await this.local.getUserData('autobase/boot')
+    const pointer = await this.local.getUserData('spacebase/boot')
     if (!pointer) return
 
     const boot = c.decode(messages.BootRecord, pointer)
@@ -460,7 +460,7 @@ module.exports = class Autobase extends ReadyResource {
     await core.close()
 
     if (info.version > AUTOBASE_VERSION) {
-      throw new Error('Autobase upgrade required.')
+      throw new Error('Spacebase upgrade required.')
     }
 
     // just compat
@@ -486,7 +486,7 @@ module.exports = class Autobase extends ReadyResource {
   async _getBootRecord () {
     await this._preopen
 
-    const pointer = await this.local.getUserData('autobase/boot')
+    const pointer = await this.local.getUserData('spacebase/boot')
 
     const boot = pointer
       ? c.decode(messages.BootRecord, pointer)
@@ -828,7 +828,7 @@ module.exports = class Autobase extends ReadyResource {
 
   async append (value, opts) {
     if (this.opened === false) await this.ready()
-    if (this._interrupting) throw new Error('Autobase is closing')
+    if (this._interrupting) throw new Error('Spacebase is closing')
     if (value && this.valueEncoding !== BINARY_ENCODING) value = normalize(this.valueEncoding, value)
 
     const optimistic = !!opts && !!opts.optimistic && !!value
@@ -913,7 +913,7 @@ module.exports = class Autobase extends ReadyResource {
   }
 
   static async getUserData (core) {
-    const view = await core.getUserData('autobase/view')
+    const view = await core.getUserData('spacebase/view')
 
     return {
       referrer: await core.getUserData('referrer'),
@@ -921,14 +921,14 @@ module.exports = class Autobase extends ReadyResource {
     }
   }
 
-  static async isAutobase (core, opts = {}) {
+  static async isSpacebase (core, opts = {}) {
     const block = await core.get(0, opts)
     if (!block) throw new Error('Core is empty.')
-    if (!b4a.isBuffer(block)) return isAutobaseMessage(block)
+    if (!b4a.isBuffer(block)) return isSpacebaseMessage(block)
 
     try {
       const m = c.decode(messages.OplogMessage, block)
-      return isAutobaseMessage(m)
+      return isSpacebaseMessage(m)
     } catch {
       return false
     }
@@ -961,7 +961,7 @@ module.exports = class Autobase extends ReadyResource {
 
     if (this._interrupting) {
       release()
-      throw new Error('Autobase is closing')
+      throw new Error('Spacebase is closing')
     }
 
     try {
@@ -1041,7 +1041,7 @@ module.exports = class Autobase extends ReadyResource {
   }
 
   _makeWriterCore (key) {
-    if (this.closing) throw new Error('Autobase is closing')
+    if (this.closing) throw new Error('Spacebase is closing')
     if (this._interrupting) throw INTERRUPT()
 
     const local = b4a.equals(key, this.local.key)
@@ -1222,7 +1222,7 @@ module.exports = class Autobase extends ReadyResource {
 
     const local = store.getLocal()
     await local.ready()
-    await local.setUserData('autobase/boot', value)
+    await local.setUserData('spacebase/boot', value)
 
     const tx = local.state.storage.write()
     // reset linearizer
@@ -1549,7 +1549,7 @@ module.exports = class Autobase extends ReadyResource {
   // ensure wakeup on an existing writer (the writer calls this in addition to above)
   _ensureWakeup (w) {
     if (w === null || w.isBootstrap === true) return
-    w.setBootstrap(true) // even if turn false at end of drain, hypercore makes them linger a bit so no churn
+    w.setBootstrap(true) // even if turn false at end of drain, spacecore makes them linger a bit so no churn
     this._bootstrapWriters.push(w)
     this._bootstrapWritersChanged = true
   }
@@ -1809,10 +1809,10 @@ module.exports = class Autobase extends ReadyResource {
 }
 
 function toKey (k) {
-  return b4a.isBuffer(k) ? k : hypercoreId.decode(k)
+  return b4a.isBuffer(k) ? k : spacecoreId.decode(k)
 }
 
-function isAutobaseMessage (msg) {
+function isSpacebaseMessage (msg) {
   return msg.checkpoint ? msg.checkpoint.length > 0 : msg.checkpoint === null
 }
 

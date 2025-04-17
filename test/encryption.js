@@ -1,14 +1,14 @@
 const test = require('brittle')
 const tmpDir = require('test-tmp')
-const Corestore = require('corestore')
+const Corestore = require('spacecorestore')
 const b4a = require('b4a')
 
-const Autobase = require('..')
+const Spacebase = require('..')
 
 test('encryption - basic', async t => {
   const tmp = await tmpDir(t)
   const store = new Corestore(tmp)
-  const base = new Autobase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encryptionKey: b4a.alloc(32).fill('secret') })
+  const base = new Spacebase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encryptionKey: b4a.alloc(32).fill('secret') })
 
   t.ok(base.encryptionKey)
 
@@ -40,7 +40,7 @@ test('encryption - basic', async t => {
 test('encryption - restart', async t => {
   const tmp = await tmpDir(t)
   const store = new Corestore(tmp)
-  const base = new Autobase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encryptionKey: b4a.alloc(32).fill('secret') })
+  const base = new Spacebase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encryptionKey: b4a.alloc(32).fill('secret') })
 
   t.ok(base.encryptionKey)
 
@@ -50,7 +50,7 @@ test('encryption - restart', async t => {
   t.is(store.cores.size, 0)
 
   const store2 = new Corestore(tmp)
-  const base2 = new Autobase(store2, { apply, open, ackInterval: 0, ackThreshold: 0 })
+  const base2 = new Spacebase(store2, { apply, open, ackInterval: 0, ackThreshold: 0 })
 
   t.alike(await base2.view.get(0), 'you should still not see me')
   t.ok(base2.encryptionKey)
@@ -75,7 +75,7 @@ test('encryption - restart', async t => {
 test('encryption - expect encryption key', async t => {
   const storage = await tmpDir(t)
   const store = new Corestore(storage)
-  const base = new Autobase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encrypted: true })
+  const base = new Spacebase(store, { apply, open, ackInterval: 0, ackThreshold: 0, encrypted: true })
 
   try {
     await base.ready()

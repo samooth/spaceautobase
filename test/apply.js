@@ -1,7 +1,7 @@
 const test = require('brittle')
 const b4a = require('b4a')
 const uncaughts = require('uncaughts')
-const Autobase = require('..')
+const Spacebase = require('..')
 
 const {
   create,
@@ -503,7 +503,7 @@ test('apply - uncaught exception', async t => {
     uncaughts.on(reject)
   })
 
-  const a = new Autobase(store.session(), null, {
+  const a = new Spacebase(store.session(), null, {
     async apply (nodes, view, base) {
       throw new Error('Synthetic')
     },
@@ -516,7 +516,7 @@ test('apply - uncaught exception', async t => {
   // should throw uncaught exception
   await t.exception(error, /Synthetic/)
 
-  const a2 = new Autobase(store.session(), a.key, {
+  const a2 = new Spacebase(store.session(), a.key, {
     apply: () => {},
     valueEncoding: 'json'
   })

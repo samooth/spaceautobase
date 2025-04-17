@@ -1,5 +1,5 @@
 const test = require('brittle')
-const Hyperbee = require('hyperbee')
+const Spacebee = require('spacebee')
 
 const {
   create,
@@ -240,7 +240,7 @@ async function applyForBee (t, batch, view, base) {
 
 function openForBee (linStore) {
   const core = linStore.get('simple-bee', { valueEncoding: 'binary' })
-  const view = new Hyperbee(core, beeOpts)
+  const view = new Spacebee(core, beeOpts)
   return view
 }
 

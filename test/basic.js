@@ -1,11 +1,11 @@
 const test = require('brittle')
-const Corestore = require('corestore')
+const Corestore = require('spacecorestore')
 const b4a = require('b4a')
 const tmpDir = require('test-tmp')
-const crypto = require('hypercore-crypto')
+const crypto = require('spacecore-crypto')
 const Rache = require('rache')
 
-const Autobase = require('..')
+const Spacebase = require('..')
 
 const {
   create,
@@ -162,7 +162,7 @@ test('basic - writable event fires', async t => {
   const [base1, base2] = bases
 
   base2.on('writable', () => {
-    t.ok(base2.writable, 'Writable event fired when autobase writable')
+    t.ok(base2.writable, 'Writable event fired when spacebase writable')
   })
 
   await addWriter(base1, base2)
@@ -276,14 +276,14 @@ test('basic - view/writer userdata is set', async t => {
   await verifyUserData(base2)
 
   async function verifyUserData (base) {
-    const systemData = await Autobase.getUserData(base.system.core)
+    const systemData = await Spacebase.getUserData(base.system.core)
 
     t.alike(systemData.referrer, base.key)
     t.alike(systemData.view, '_system')
 
     t.is(base.activeWriters.size, 2)
     for (const writer of base.activeWriters) {
-      const writerData = await Autobase.getUserData(writer.core)
+      const writerData = await Spacebase.getUserData(writer.core)
       t.alike(writerData.referrer, base.key)
     }
   }
@@ -595,7 +595,7 @@ test('basic - restarting sets bootstrap correctly', async t => {
 
   {
     const ns = store.namespace('random-name')
-    const base = new Autobase(ns, null, { ackInterval: 0, ackThreshold: 0 })
+    const base = new Spacebase(ns, null, { ackInterval: 0, ackThreshold: 0 })
     await base.ready()
 
     bootstrapKey = base.key
@@ -606,7 +606,7 @@ test('basic - restarting sets bootstrap correctly', async t => {
 
   {
     const ns = store.namespace(bootstrapKey)
-    const base = new Autobase(ns, bootstrapKey, { ackInterval: 0, ackThreshold: 0 })
+    const base = new Spacebase(ns, bootstrapKey, { ackInterval: 0, ackThreshold: 0 })
     await base.ready()
 
     t.alike(base.key, bootstrapKey)
@@ -691,7 +691,7 @@ test('append during reindex', async t => {
   await unreplicate()
 })
 
-test('closing an autobase', async t => {
+test('closing an spacebase', async t => {
   const { bases } = await create(1, t)
   const [base] = bases
 
@@ -901,7 +901,7 @@ test('basic - gc indexed nodes', async t => {
   t.alike(await base.view.get(4), { message: '4' })
 })
 
-test('basic - isAutobase', async t => {
+test('basic - isSpacebase', async t => {
   const { bases } = await create(3, t, { open: null })
   const [base1, base2, base3] = bases
 
@@ -909,18 +909,18 @@ test('basic - isAutobase', async t => {
 
   await confirm([base1, base2, base3])
 
-  await t.exception(Autobase.isAutobase(base3.local, { wait: false }))
+  await t.exception(Spacebase.isSpacebase(base3.local, { wait: false }))
 
   await addWriter(base2, base3)
 
   await confirm([base1, base2, base3])
 
-  t.is(await Autobase.isAutobase(base1.local), true)
-  t.is(await Autobase.isAutobase(base2.local), true)
+  t.is(await Spacebase.isSpacebase(base1.local), true)
+  t.is(await Spacebase.isSpacebase(base2.local), true)
 
   await base3.append('hello')
 
-  t.is(await Autobase.isAutobase(base3.local), true)
+  t.is(await Spacebase.isSpacebase(base3.local), true)
 })
 
 test('basic - non-indexed writer', async t => {
@@ -970,8 +970,8 @@ test('basic - non-indexed writer', async t => {
   t.is(a2, 'a0')
   t.is(b2, 'a0')
 
-  t.ok(await Autobase.isAutobase(a.local))
-  t.ok(await Autobase.isAutobase(b.local))
+  t.ok(await Spacebase.isSpacebase(a.local))
+  t.ok(await Spacebase.isSpacebase(b.local))
 
   await compareViews([a, b], t)
 
@@ -1073,11 +1073,11 @@ test('basic - non-indexed writers 3-of-5', async t => {
 
   await compareViews([a, b, c, d, e], t)
 
-  t.ok(await Autobase.isAutobase(a.local))
-  t.ok(await Autobase.isAutobase(b.local))
-  t.ok(await Autobase.isAutobase(c.local))
-  t.ok(await Autobase.isAutobase(d.local))
-  t.ok(await Autobase.isAutobase(e.local))
+  t.ok(await Spacebase.isSpacebase(a.local))
+  t.ok(await Spacebase.isSpacebase(b.local))
+  t.ok(await Spacebase.isSpacebase(c.local))
+  t.ok(await Spacebase.isSpacebase(d.local))
+  t.ok(await Spacebase.isSpacebase(e.local))
 
   for await (const block of a.local.createReadStream({ start: 1 })) {
     t.ok(block.checkpoint.length !== 0)
@@ -1113,12 +1113,12 @@ test('basic - non-indexed writers 3-of-5', async t => {
 })
 
 // memview failing: corestore has no detach option
-test('autobase should not detach the original store', async t => {
+test('spacebase should not detach the original store', async t => {
   const tmp = await tmpDir(t)
   const store = new Corestore(tmp)
   const bootstrap = b4a.alloc(32)
 
-  const base = new Autobase(store, bootstrap)
+  const base = new Spacebase(store, bootstrap)
 
   // await here otherwise the opening will throw before we get to close the store
   await base.ready()
@@ -1156,12 +1156,12 @@ test('basic - oplog digest', async t => {
   t.alike(last.digest.key, base2.system.core.key)
 })
 
-// todo: use normal helper once we have hypercore session manager
+// todo: use normal helper once we have spacecore session manager
 test('basic - close during apply', async t => {
   t.plan(1)
 
   const [store] = await createStores(1, t)
-  const a = new Autobase(store, null, {
+  const a = new Spacebase(store, null, {
     async apply (nodes, view, base) {
       for (const node of nodes) {
         if (node.value.add) {
@@ -1841,7 +1841,7 @@ test('basic - sessions use globalCache from corestore if it is set', async t => 
   const base = createBase(store, null, t)
   await base.ready()
 
-  t.is(base.globalCache, globalCache, 'globalCache set on autobase itself')
+  t.is(base.globalCache, globalCache, 'globalCache set on spacebase itself')
   t.is(base.view.globalCache, globalCache, 'passed to autocore sessions')
   t.is(base.system.core.globalCache, globalCache, 'passed to system')
 })
